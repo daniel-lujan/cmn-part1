@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="static/styles.css" rel="stylesheet" />
+    <title>Formulario</title>
+  </head>
+  <body>
+    <main
+      id="root"
+      class="flex flex-col justify-center gap-6 p-10 max-w-[500px] m-auto"
+    >
+      <h1 class="text-4xl font-bold">Iniciar sesión</h1>
+      <form id="login-form" class="flex flex-col gap-6">
+        <input
+          id="username"
+          placeholder="Usuario"
+          class="bg-gray-100 py-2 px-6 rounded-lg outline-none"
+        />
+        <input
+          id="password"
+          type="password"
+          placeholder="Contraseña"
+          class="bg-gray-100 py-2 px-6 rounded-lg outline-none"
+        />
+        <button
+          type="submit"
+          class="bg-rose-500 text-white py-2 px-6 rounded-lg hover:bg-rose-700 transition-colors"
+        >
+          Iniciar sesión
+        </button>
+      </form>
+      <div id="login-status" class="text-green-500"></div>
+      <div class="relative flex py-5 items-center">
+        <div class="flex-grow border-t border-gray-400"></div>
+        <span class="flex-shrink mx-4 text-gray-400">Publicaciones</span>
+        <div class="flex-grow border-t border-gray-400"></div>
+      </div>
+      <h2 class="text-2xl font-bold">Añade una publicación</h2>
+      <form id="comment-form" class="flex flex-col gap-6">
+        <textarea
+          id="comment"
+          placeholder="Escribe tu publicación"
+          class="bg-gray-100 py-2 px-6 rounded-lg outline-none"
+          rows="4"
+        ></textarea>
+        <button
+          type="submit"
+          class="bg-rose-500 text-white py-2 px-6 rounded-lg hover:bg-rose-700 transition-colors"
+        >
+          Publicar
+        </button>
+      </form>
+      {% for comment in comments %}
+      <div class="bg-gray-100 p-4 rounded-lg">
+        <h3 class="text-lg font-bold">{{ comment[2] }}</h3>
+        <span>{{ comment[1] }}</span>
+      </div>
+      {% endfor %}
+    </main>
+    <script>
+      let accessToken = "";
+
+      document
+        .getElementById("login-form")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+          const username = document.getElementById("username").value;
+          const password = document.getElementById("password").value;
+
+          const response = await fetch("/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ username, password }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            accessToken = data.access_token;
+            document.getElementById(
+              "login-status"
+            ).innerText = `Has iniciado sesión como @${data.username}`;
+          }
+        });
+
+      document
+        .getElementById("comment-form")
+        .addEventListener("submit", async function (event) {
+          event.preventDefault();
+          const comment = document.getElementById("comment").value;
+
+          const response = await fetch("/comments", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({ comment }),
+          });
+        });
+    </script>
+  </body>
+</html>
